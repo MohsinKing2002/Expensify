@@ -1,10 +1,12 @@
 import { Text, TouchableOpacity, View, Image } from "react-native";
 import Navbar from "../Components/Menu";
 import { AntDesign } from "@expo/vector-icons";
+import { FontAwesome } from "@expo/vector-icons";
 import { Ionicons } from "@expo/vector-icons";
-import { Divider } from "react-native-paper";
+import { Divider, Modal, Portal, TextInput } from "react-native-paper";
 import { PieChart } from "react-native-chart-kit";
 import Logo from "../../assets/icon.png";
+import { useState } from "react";
 
 const chartConfig = {
   backgroundGradientFrom: "#1E2923",
@@ -15,6 +17,16 @@ const chartConfig = {
   strokeWidth: 2, // optional, default 3
   barPercentage: 0.5,
   useShadowColorFromDataset: false, // optional
+};
+
+const containerStyle = {
+  backgroundColor: "white",
+  padding: 20,
+  position: "absolute",
+  bottom: 0,
+  width: "100%",
+  borderTopRightRadius: 20,
+  borderTopLeftRadius: 20,
 };
 
 const DailyExpenseCard = ({ purpose, time, amount }) => {
@@ -35,26 +47,31 @@ const DailyExpenseCard = ({ purpose, time, amount }) => {
 };
 
 const Home = () => {
+  const [AddNewExpenseModalOpen, setAddNewExpenseModalOpen] = useState(false);
+  const [purpose, setPurpose] = useState("");
+  const [currency, setCurrency] = useState("");
+  const [amount, setAmount] = useState("");
+
   const data = [
     {
       name: "Budget",
       population: 5000,
-      color: "rgb(21 128 61)",
+      color: "rgb(22 163 74)",
       legendFontColor: "rgb(21 128 61)",
       legendFontSize: 14,
     },
     {
       name: "Expenses",
       population: 3000,
-      color: "rgb(185 28 28)",
+      color: "rgb(220 38 38)",
       legendFontColor: "rgb(185 28 28)",
       legendFontSize: 14,
     },
     {
       name: "Remaining",
       population: 2000,
-      color: "#00008b",
-      legendFontColor: "#00008b",
+      color: "rgb(59 7 100)",
+      legendFontColor: "rgb(59 7 100)",
       legendFontSize: 14,
     },
   ];
@@ -144,12 +161,78 @@ const Home = () => {
       {/* ********************** Navbar menu and create expense button ************************************ */}
       <View className="bg-sky-50 absolute bottom-1 w-full">
         <View className="absolute right-6 top-[-40px] bg-bgGray rounded-full p-1.5 z-10">
-          <TouchableOpacity className="bg-sky-50 p-3 rounded-full">
+          <TouchableOpacity
+            onPress={() => setAddNewExpenseModalOpen(true)}
+            className="bg-sky-50 p-3 rounded-full"
+          >
             <AntDesign name="pluscircleo" size={35} color="darkblue" />
           </TouchableOpacity>
         </View>
         <Navbar />
       </View>
+
+      <Portal>
+        <Modal
+          visible={AddNewExpenseModalOpen}
+          onDismiss={() => setAddNewExpenseModalOpen(false)}
+          contentContainerStyle={containerStyle}
+        >
+          <View className="p-2">
+            <View className="border-b border-gray-300 flex flex-row items-center justify-between pb-3 mb-4">
+              <Text className="text-lg text-txtBlue font-medium">
+                Add New Expense
+              </Text>
+              <TouchableOpacity
+                onPress={() => setAddNewExpenseModalOpen(false)}
+              >
+                <AntDesign name="closecircleo" size={24} color="#00008b" />
+              </TouchableOpacity>
+            </View>
+            <View className="flex gap-4">
+              <TextInput
+                outlineStyle={{ borderRadius: 8 }}
+                label="Purpose"
+                mode="outlined"
+                value={purpose}
+                onChangeText={(text) => setPurpose(text)}
+              />
+
+              <TextInput
+                outlineStyle={{ borderRadius: 8 }}
+                label="Amount"
+                mode="outlined"
+                value={amount}
+                onChangeText={(text) => setAmount(text)}
+                left={
+                  <TextInput.Icon
+                    icon={() => (
+                      <FontAwesome name="rupee" size={16} color="black" />
+                    )}
+                  />
+                }
+              />
+
+              <TouchableOpacity
+                className={
+                  " items-center justify-center flex-row py-3 px-8 rounded-lg bg-purple-950"
+                }
+                // onPress={handleSubmit}
+                // disabled={!isValid}
+              >
+                <Text className="font-bold text-white text-xl">Add</Text>
+                <View className={`ml-6 bg-purple-900 p-1.5 rounded-full`}>
+                  <AntDesign
+                    name="check"
+                    size={18}
+                    color="white"
+                    className=""
+                  />
+                </View>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+      </Portal>
     </View>
   );
 };
