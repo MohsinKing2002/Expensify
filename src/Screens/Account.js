@@ -1,12 +1,14 @@
 import { View, Text, TouchableOpacity } from "react-native";
 import { Avatar, ProgressBar } from "react-native-paper";
-import { Entypo } from "@expo/vector-icons";
 import { AntDesign } from "@expo/vector-icons";
+import { Entypo } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import Img from "../../assets/icon.png";
 import { useState } from "react";
 
 const Account = () => {
   const [BudgetTab, setBudgetTab] = useState(true);
+  const [BorrowedTab, setBorrowedTab] = useState(false);
   return (
     <View className="h-full bg-bgGray px-4 py-2">
       {/* user profile and edit option */}
@@ -165,7 +167,48 @@ const Account = () => {
             </View>
           </>
         ) : (
-          <></>
+          <View className="border border-gray-300 rounded-lg p-2">
+            <View className="flex flex-row items-center justify-between mb-5 border-b border-gray-300">
+              <TouchableOpacity
+                onPress={() => setBorrowedTab(false)}
+                className={`flex flex-row items-center justify-center  px-4 py-2 w-[50%] border-b ${
+                  !BorrowedTab ? "border-txtBlue" : "border-bgGray"
+                }`}
+              >
+                <MaterialCommunityIcons
+                  name="credit-card-minus"
+                  size={18}
+                  color={!BorrowedTab ? "#00008b" : "gray"}
+                />
+                <Text
+                  className={`ml-3 text-base font-semibold ${
+                    !BorrowedTab ? "text-txtBlue" : "text-txtGray"
+                  }`}
+                >
+                  Given
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => setBorrowedTab(true)}
+                className={`flex flex-row items-center justify-center px-4 py-2 w-[50%] border-b ${
+                  BorrowedTab ? "border-txtBlue" : "border-bgGray"
+                }`}
+              >
+                <MaterialCommunityIcons
+                  name="credit-card-plus"
+                  size={18}
+                  color={!BorrowedTab ? "gray" : "#00008b"}
+                />
+                <Text
+                  className={`ml-3 text-base font-semibold ${
+                    BorrowedTab ? "text-txtBlue" : "text-txtGray"
+                  }`}
+                >
+                  Borrowed
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
         )}
       </View>
     </View>
