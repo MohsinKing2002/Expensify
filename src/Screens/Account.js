@@ -2,13 +2,48 @@ import { View, Text, TouchableOpacity } from "react-native";
 import { Avatar, ProgressBar } from "react-native-paper";
 import { AntDesign } from "@expo/vector-icons";
 import { Entypo } from "@expo/vector-icons";
+import { Feather } from "@expo/vector-icons";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import Img from "../../assets/icon.png";
 import { useState } from "react";
 
+const TransactionCard = ({ name, date, amount, BorrowedTab }) => {
+  return (
+    <View className="mb-2 flex flex-row items-center justify-between">
+      <View className="flex flex-row items-center">
+        <View className="bg-bgGray p-2 rounded-full">
+          <Feather
+            name={BorrowedTab ? "plus-circle" : "minus-circle"}
+            size={20}
+            color={BorrowedTab ? "red" : "green"}
+          />
+        </View>
+        <View className="ml-2">
+          <Text
+            className={`text-base ${
+              BorrowedTab ? "text-txtRed" : "text-txtGreen"
+            } font-medium`}
+          >
+            {name}
+          </Text>
+          <Text className="text-xs text-txtGray font-medium">{date}</Text>
+        </View>
+      </View>
+      <Text
+        className={`text-lg ${
+          BorrowedTab ? "text-txtRed" : "text-txtGreen"
+        }  font-semibold`}
+      >
+        ₹ {amount}
+      </Text>
+    </View>
+  );
+};
+
 const Account = () => {
   const [BudgetTab, setBudgetTab] = useState(true);
   const [BorrowedTab, setBorrowedTab] = useState(false);
+
   return (
     <View className="h-full bg-bgGray px-4 py-2">
       {/* user profile and edit option */}
@@ -168,6 +203,7 @@ const Account = () => {
           </>
         ) : (
           <View className="border border-gray-300 rounded-lg p-2">
+            {/* given and borrowed tabs */}
             <View className="flex flex-row items-center justify-between mb-5 border-b border-gray-300">
               <TouchableOpacity
                 onPress={() => setBorrowedTab(false)}
@@ -208,6 +244,25 @@ const Account = () => {
                 </Text>
               </TouchableOpacity>
             </View>
+            {BorrowedTab ? (
+              <View>
+                <TransactionCard
+                  name={"Asif"}
+                  date={"12/11/2023 10:10pm"}
+                  amount={100}
+                  BorrowedTab={BorrowedTab}
+                />
+              </View>
+            ) : (
+              <View>
+                <TransactionCard
+                  name={"Asif"}
+                  date={"12/11/2023 10:10pm"}
+                  amount={100}
+                  BorrowedTab={BorrowedTab}
+                />
+              </View>
+            )}
           </View>
         )}
       </View>
