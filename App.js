@@ -27,7 +27,7 @@ export default function App() {
             name="History"
             options={{
               headerTitleAlign: "center",
-              headerTitle: "History",
+              headerTitle: "Transactions History",
             }}
             component={History}
           />

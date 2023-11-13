@@ -19,7 +19,7 @@ const chartConfig = {
   useShadowColorFromDataset: false, // optional
 };
 
-const containerStyle = {
+export const containerStyle = {
   backgroundColor: "white",
   padding: 20,
   position: "absolute",
@@ -29,7 +29,7 @@ const containerStyle = {
   borderTopLeftRadius: 20,
 };
 
-const DailyExpenseCard = ({ purpose, time, amount }) => {
+export const DailyExpenseCard = ({ purpose, time, amount }) => {
   return (
     <View className="mb-2 flex flex-row items-center justify-between">
       <View className="flex flex-row items-center">
@@ -145,9 +145,12 @@ const Home = () => {
           <DailyExpenseCard amount={300} purpose={"Dinner"} time={"09:00 pm"} />
           <DailyExpenseCard amount={600} purpose={"Dinner"} time={"09:00 pm"} />
           <Divider bold className="my-2" />
-          <Text className="text-txtBlue text-base font-semibold">
-            Today's Expenses
-          </Text>
+          <View className="flex flex-row items-center justify-between">
+            <Text className="text-txtBlue text-base font-semibold">
+              Today's Expenses
+            </Text>
+            <Text className="text-txtRed text-base font-semibold">₹ 3000</Text>
+          </View>
         </View>
 
         <View className="py-1.5 px-2.5 bg-white rounded w-[80%] flex flex-row items-center">
