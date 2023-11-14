@@ -1,19 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { TouchableOpacity, View } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import AntDesign from "@expo/vector-icons/AntDesign";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { useNavigation, useNavigationState } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
 
 const Navbar = () => {
   const navigation = useNavigation();
-  const state = useNavigationState((state) => state);
-  const [route, setRoute] = useState(null);
-  useEffect(() => {
-    if (state?.routes?.length > 0) {
-      setRoute(state?.routes?.[state?.routes?.length - 1]);
-    } else setRoute(null);
-  }, [state]);
 
   return (
     <View className=" flex flex-row items-center justify-around p-1.5 w-[80%]">

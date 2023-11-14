@@ -1,12 +1,14 @@
 import { StatusBar } from "expo-status-bar";
-import { View } from "react-native";
 import Home from "./src/Screens/Home";
 import { PaperProvider } from "react-native-paper";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import History from "./src/Screens/History";
 import Account from "./src/Screens/Account";
-import Navbar from "./src/Components/Menu";
+import Login from "./src/Screens/Login";
+import Register from "./src/Screens/Register";
+import { useEffect, useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Stack = createNativeStackNavigator();
 
@@ -15,13 +17,23 @@ export default function App() {
     <PaperProvider>
       <NavigationContainer>
         <Stack.Navigator
-          initialRouteName="Home"
+          initialRouteName="Login"
           screenOptions={{ animation: "none" }}
         >
           <Stack.Screen
             name="Home"
             options={{ headerShown: false }}
             component={Home}
+          />
+          <Stack.Screen
+            name="Login"
+            options={{ headerShown: false }}
+            component={Login}
+          />
+          <Stack.Screen
+            name="Register"
+            options={{ headerShown: false }}
+            component={Register}
           />
           <Stack.Screen
             name="History"

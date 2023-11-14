@@ -5,7 +5,8 @@ import { Entypo } from "@expo/vector-icons";
 import { Feather } from "@expo/vector-icons";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import Img from "../../assets/icon.png";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const TransactionCard = ({ name, date, amount, BorrowedTab }) => {
   return (
@@ -44,6 +45,24 @@ const Account = () => {
   const [BudgetTab, setBudgetTab] = useState(true);
   const [BorrowedTab, setBorrowedTab] = useState(false);
 
+  const [userSession, setUserSession] = useState(null);
+  // console.log("user", user);
+
+  const getUserData = async () => {
+    try {
+      const data = await AsyncStorage.getItem("user");
+      if (data) {
+        const user = JSON.parse(data);
+        setUserSession(user);
+      }
+    } catch (error) {
+      console.log("get user data error in account", error);
+    }
+  };
+  useEffect(() => {
+    getUserData();
+  }, []);
+
   return (
     <>
       <View className="h-full bg-bgGray px-4 py-2">
@@ -53,10 +72,10 @@ const Account = () => {
             <Avatar.Image size={60} source={Img} />
             <View className="ml-6">
               <Text className="text-xl text-txtBlue font-semibold mb-0.5">
-                Mohsin King
+                {userSession?.name}
               </Text>
               <Text className="text-base text-txtBlue font-medium">
-                +91 8670562921
+                {userSession?.email}
               </Text>
             </View>
           </View>
