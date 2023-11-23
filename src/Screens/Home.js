@@ -6,7 +6,10 @@ import { Ionicons } from "@expo/vector-icons";
 import { Divider, Modal, Portal, TextInput } from "react-native-paper";
 import { PieChart } from "react-native-chart-kit";
 import Logo from "../../assets/icon.png";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { ID, account, databases } from "../../AppWriteConfig";
+import moment from "moment";
+import { Query } from "appwrite";
 
 const chartConfig = {
   backgroundGradientFrom: "#1E2923",
@@ -49,32 +52,119 @@ export const DailyExpenseCard = ({ purpose, time, amount }) => {
 const Home = () => {
   const [AddNewExpenseModalOpen, setAddNewExpenseModalOpen] = useState(false);
   const [purpose, setPurpose] = useState("");
-  const [currency, setCurrency] = useState("");
   const [amount, setAmount] = useState("");
+  const [allExpenses, setAllExpenses] = useState([]);
+  const [budgetDetails, setBudgetDetails] = useState({});
+  const [data, setData] = useState([]);
+  const [todayTotal, setTodayTotal] = useState(0);
+  // console.log("data", allExpenses);
 
-  const data = [
-    {
-      name: "Budget",
-      population: 5000,
-      color: "rgb(22 163 74)",
-      legendFontColor: "rgb(21 128 61)",
-      legendFontSize: 14,
-    },
-    {
-      name: "Expenses",
-      population: 3000,
-      color: "rgb(220 38 38)",
-      legendFontColor: "rgb(185 28 28)",
-      legendFontSize: 14,
-    },
-    {
-      name: "Remaining",
-      population: 2000,
-      color: "rgb(59 7 100)",
-      legendFontColor: "rgb(59 7 100)",
-      legendFontSize: 14,
-    },
-  ];
+  const createExpense = async () => {
+    const user = await account.get();
+    // console.log(user);
+    return await databases
+      .createDocument(
+        "6554ca013cea177e6ab3",
+        "6554ca412b4adff127e4",
+        ID.unique(),
+        {
+          user_id: user.$id,
+          purpose: purpose,
+          amount: amount,
+          createdAt: moment().format("hh:mm a"),
+        }
+      )
+      .then((res) => {
+        databases
+          .updateDocument(
+            "6554ca013cea177e6ab3",
+            "6554d739898bea38353b",
+            "6554d88c624531cdf3e9",
+            {
+              remaing: `${Number(budgetDetails.remaing - Number(amount))}`,
+              expense: `${Number(budgetDetails.expense) + Number(amount)}`,
+            }
+          )
+          .then((res) => {
+            setAmount("");
+            setPurpose("");
+            setAddNewExpenseModalOpen(false);
+            getAllExpenses();
+            getBudgetDetails();
+          });
+      })
+      .catch((err) => {
+        console.log("err in create expense", err);
+      });
+  };
+
+  const getAllExpenses = async () => {
+    let user = await account.get();
+    return await databases
+      .listDocuments("6554ca013cea177e6ab3", "6554ca412b4adff127e4", [
+        Query.equal("user_id", [user.$id]),
+      ])
+      .then((res) => {
+        setAllExpenses(res.documents.reverse());
+      })
+      .catch((err) => console.log("get all expense error", err));
+  };
+  const getBudgetDetails = async () => {
+    return await databases
+      .getDocument(
+        "6554ca013cea177e6ab3",
+        "6554d739898bea38353b",
+        "6554d88c624531cdf3e9"
+      )
+      .then((res) => {
+        // setAllExpenses(res.documents.reverse());
+        setBudgetDetails(res);
+      })
+      .catch((err) => console.log("get budget details error", err));
+  };
+
+  useEffect(() => {
+    if (Object.keys(budgetDetails).length > 0) {
+      const data = [
+        {
+          name: "Budget",
+          population: Number(budgetDetails?.budget),
+          color: "rgb(22 163 74)",
+          legendFontColor: "rgb(21 128 61)",
+          legendFontSize: 14,
+        },
+        {
+          name: "Expenses",
+          population: Number(budgetDetails?.expense),
+          color: "rgb(220 38 38)",
+          legendFontColor: "rgb(185 28 28)",
+          legendFontSize: 14,
+        },
+        {
+          name: "Remaining",
+          population: Number(budgetDetails?.remaing),
+          color: "rgb(59 7 100)",
+          legendFontColor: "rgb(59 7 100)",
+          legendFontSize: 14,
+        },
+      ];
+      setData(data);
+    } else setData([]);
+
+    if (allExpenses.length > 0) {
+      const total = allExpenses.reduce(
+        (total, item) => total + Number(item.amount),
+        0
+      );
+      setTodayTotal(total);
+    }
+  }, [budgetDetails, allExpenses]);
+
+  useEffect(() => {
+    getAllExpenses();
+    getBudgetDetails();
+  }, []);
+
   return (
     <View className="h-full bg-bgGray">
       {/* ********************** Header icon with app logo ************************************ */}
@@ -125,12 +215,14 @@ const Home = () => {
           </View>
           <View>
             <Text className="text-txtGreen text-base font-semibold">
-              ₹ 5000
+              ₹ {budgetDetails?.budget}
             </Text>
             <Text className="text-txtRed text-base font-semibold my-1">
-              ₹ 2000
+              ₹ {budgetDetails?.expense}
             </Text>
-            <Text className="text-txtBlue text-base font-semibold">₹ 3000</Text>
+            <Text className="text-txtBlue text-base font-semibold">
+              ₹ {budgetDetails?.remaing}
+            </Text>
           </View>
         </View>
 
@@ -139,17 +231,22 @@ const Home = () => {
             Today's Expenses
           </Text>
           <Divider bold className="my-2" />
-          <DailyExpenseCard amount={200} purpose={"Lunch"} time={"01:20 pm"} />
-          <DailyExpenseCard amount={300} purpose={"Dinner"} time={"09:00 pm"} />
-          <DailyExpenseCard amount={100} purpose={"Dinner"} time={"09:00 pm"} />
-          <DailyExpenseCard amount={300} purpose={"Dinner"} time={"09:00 pm"} />
-          <DailyExpenseCard amount={600} purpose={"Dinner"} time={"09:00 pm"} />
+          {allExpenses?.map((item) => (
+            <DailyExpenseCard
+              key={item.$id}
+              amount={item.amount}
+              purpose={item.purpose}
+              time={item.createdAt}
+            />
+          ))}
           <Divider bold className="my-2" />
           <View className="flex flex-row items-center justify-between">
             <Text className="text-txtBlue text-base font-semibold">
               Today's Expenses
             </Text>
-            <Text className="text-txtRed text-base font-semibold">₹ 3000</Text>
+            <Text className="text-txtRed text-base font-semibold">
+              ₹ {todayTotal}
+            </Text>
           </View>
         </View>
 
@@ -205,6 +302,7 @@ const Home = () => {
                 label="Amount"
                 mode="outlined"
                 value={amount}
+                keyboardType="number-pad"
                 onChangeText={(text) => setAmount(text)}
                 left={
                   <TextInput.Icon
@@ -219,8 +317,7 @@ const Home = () => {
                 className={
                   " items-center justify-center flex-row py-3 px-8 rounded-lg bg-purple-950"
                 }
-                // onPress={handleSubmit}
-                // disabled={!isValid}
+                onPress={createExpense}
               >
                 <Text className="font-bold text-white text-xl">Add</Text>
                 <View className={`ml-6 bg-purple-900 p-1.5 rounded-full`}>

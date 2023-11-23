@@ -1,20 +1,47 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, TouchableOpacity, Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Feather } from "@expo/vector-icons";
 import { TextInput, Avatar } from "react-native-paper";
 import Logo from "../../assets/icon.png";
 import { useNavigation } from "@react-navigation/native";
+import { account } from "../../AppWriteConfig";
 
 const Login = () => {
   const navigation = useNavigation();
+  const [Loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const loginUser = async () => {
-    console.log("login");
-    navigation.navigate("Home");
+    setLoading(true);
+    return await account
+      .createEmailSession(email, password)
+      .then((res) => {
+        const user = account.get();
+        user
+          .then(() => {
+            setLoading(false);
+            navigation.navigate("Home");
+            setEmail("");
+            setPassword("");
+          })
+          .catch((err) => {
+            setLoading(false);
+            Alert.alert("Failed to Login");
+            console.log("login get user error", err);
+          });
+      })
+      .catch((err) => {
+        setLoading(false);
+        console.log("login err", err);
+      });
   };
+
+  useEffect(() => {
+    let user = account.get();
+    if (user) navigation.navigate("Home");
+  }, [navigation]);
 
   return (
     <View className="h-full bg-white flex items-center justify-center">
@@ -54,9 +81,13 @@ const Login = () => {
             className={
               " items-center justify-center flex-row py-3 px-8 rounded-lg bg-purple-950"
             }
+            disabled={Loading}
             onPress={loginUser}
           >
-            <Text className="font-bold text-white text-xl">Login</Text>
+            <Text className="font-bold text-white text-xl">
+              {" "}
+              {Loading ? "Logging in" : "Login"}
+            </Text>
             <View className={`ml-6 bg-purple-900 p-1.5 rounded-full`}>
               <Feather name="check" size={18} color="white" className="" />
             </View>

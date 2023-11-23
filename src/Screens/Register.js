@@ -4,15 +4,35 @@ import { Feather } from "@expo/vector-icons";
 import { TextInput, Avatar } from "react-native-paper";
 import Logo from "../../assets/icon.png";
 import { useNavigation } from "@react-navigation/native";
+import { ID, account, permission } from "../../AppWriteConfig";
 
 const Register = () => {
   const navigation = useNavigation();
+  const [Loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
 
   const registerUser = async () => {
-    console.log("register");
+    if (!email || !name || !password)
+      return Alert.alert("Please fill the mandotory details.");
+    setLoading(true);
+    await account.create(ID.unique(), email, password, name);
+
+    return await account
+      .createEmailSession(email, password)
+      .then((res) => {
+        Alert.alert(`Welcome ${name}`);
+        setEmail("");
+        setName("");
+        setPassword("");
+        setLoading(false);
+        navigation.navigate("Home");
+      })
+      .catch((err) => {
+        setLoading(false);
+        console.log("sign up error", err);
+      });
   };
 
   return (
@@ -68,7 +88,9 @@ const Register = () => {
             }
             onPress={registerUser}
           >
-            <Text className="font-bold text-white text-xl">Register</Text>
+            <Text className="font-bold text-white text-xl">
+              {Loading ? "Registering.." : "Register"}
+            </Text>
             <View className={`ml-6 bg-purple-900 p-1.5 rounded-full`}>
               <Feather name="check" size={18} color="white" className="" />
             </View>

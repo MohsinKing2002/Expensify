@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, Alert } from "react-native";
 import { Avatar, ProgressBar } from "react-native-paper";
 import { AntDesign } from "@expo/vector-icons";
 import { Entypo } from "@expo/vector-icons";
@@ -7,6 +7,9 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import Img from "../../assets/icon.png";
 import { useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { account } from "../../AppWriteConfig";
+import LoadingScreen from "../Components/LoadingScreen";
+import { useNavigation } from "@react-navigation/native";
 
 const TransactionCard = ({ name, date, amount, BorrowedTab }) => {
   return (
@@ -42,20 +45,39 @@ const TransactionCard = ({ name, date, amount, BorrowedTab }) => {
 };
 
 const Account = () => {
+  const navigation = useNavigation();
+  const [Loading, setLoading] = useState(false);
+  const [LoadingLO, setLoadingLO] = useState(false);
   const [BudgetTab, setBudgetTab] = useState(true);
   const [BorrowedTab, setBorrowedTab] = useState(false);
 
   const [userSession, setUserSession] = useState(null);
-  // console.log("user", user);
+  // console.log("user", userSession);
+
+  const logoutUser = async () => {
+    setLoadingLO(true);
+    return await account
+      .deleteSession("current")
+      .then((res) => {
+        setLoadingLO(false);
+        setUserSession(null);
+        navigation.navigate("Login");
+      })
+      .catch((err) => {
+        setLoadingLO(false);
+        console.log("logout err", err);
+      });
+  };
 
   const getUserData = async () => {
     try {
-      const data = await AsyncStorage.getItem("user");
-      if (data) {
-        const user = JSON.parse(data);
-        setUserSession(user);
-      }
+      setLoading(true);
+      const data = await account.get();
+      setUserSession(data);
+      setLoading(false);
     } catch (error) {
+      setLoading(false);
+      navigation.navigate("Login");
       console.log("get user data error in account", error);
     }
   };
@@ -63,13 +85,21 @@ const Account = () => {
     getUserData();
   }, []);
 
-  return (
+  return Loading ? (
+    <LoadingScreen />
+  ) : (
     <>
       <View className="h-full bg-bgGray px-4 py-2">
         {/* user profile and edit option */}
         <View className="bg-white shadow-xl py-2 px-4 rounded-lg mb-2.5 flex  flex-row items-center justify-between">
           <View className="flex items-center flex-row">
-            <Avatar.Image size={60} source={Img} />
+            <Avatar.Text
+              className="bg-txtBlue"
+              size={60}
+              label={`${userSession?.name
+                ?.split(" ")[0]
+                ?.slice(0, 1)}${userSession?.name?.split(" ")[1]?.slice(0, 1)}`}
+            />
             <View className="ml-6">
               <Text className="text-xl text-txtBlue font-semibold mb-0.5">
                 {userSession?.name}
@@ -79,9 +109,17 @@ const Account = () => {
               </Text>
             </View>
           </View>
-          <TouchableOpacity className="bg-bgGray p-3 rounded-full">
-            <Entypo name="edit" size={20} color="#00008b" />
-          </TouchableOpacity>
+          <View className="flex gap-2">
+            <TouchableOpacity className="bg-blue-400 p-2 px-3 rounded-md">
+              <Entypo name="edit" size={16} color="white" />
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={logoutUser}
+              className="bg-red-800 p-2 px-3 rounded-md"
+            >
+              <AntDesign name="logout" size={16} color="white" />
+            </TouchableOpacity>
+          </View>
         </View>
         <View className="bg-white shadow-xl p-3 rounded-lg">
           {/* budget and personal(due, borrow) tabs */}
@@ -218,13 +256,9 @@ const Account = () => {
                   </Text>
                 </View>
               </View>
-              {/* review and suggestion based on expense */}
-              <View className="border border-gray-300 rounded-lg p-2">
-                <Text>Review</Text>
-              </View>
             </>
           ) : (
-            <View className="border border-gray-300 rounded-lg p-2">
+            <View className="border border-gray-300 rounded-lg p-2 mb-6">
               {/* given and borrowed tabs */}
               <View className="flex flex-row items-center justify-between mb-5 border-b border-gray-300">
                 <TouchableOpacity
